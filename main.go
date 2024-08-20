@@ -1,3 +1,14 @@
+
+<<<<<<< HEAD
+// Your changes
+=======
+// Incoming changes from the other branch
+>>>>>>> branch-name
+
+
+
+
+
 package main
 
 import (
