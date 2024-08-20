@@ -72,7 +72,14 @@ func GetTasks() ([]Task, error) {
 // UpdateTask updates an existing task in the database
 func UpdateTask(id int, task Task) error {
 	query := `mutation UpdateTask($id: Int!, $task_name: String, $description: String, $start_time: timestamptz, $end_time: timestamptz, $priority: String, $status: String) {
-		update_tasks_by_pk(pk_columns: {id: $id}, _set: {task_name: $task_name, description: $description, start_time: $start_time, end_time: $end_time, priority: $priority, status: $status}) {
+		update_tasks_by_pk(pk_columns: {id: $id}, _set: {
+			task_name: $task_name, 
+			description: $description,
+			start_time: $start_time,
+			end_time: $end_time, 
+			priority: $priority, 
+			status: $status
+			}) {
 			id
 		}
 	}`

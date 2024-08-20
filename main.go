@@ -1,48 +1,52 @@
 package main
 
 import (
-	"TaskManagement/utils" // Adjust this to your actual module path
-	"fmt"
+	"encoding/json"
 	"log"
+	"net/http"
+
+	"github.com/rs/cors"
 )
 
+type Task struct {
+	TaskName    string `json:"task_name"`
+	Description string `json:"description"`
+	StartTime   string `json:"start_time"`
+	EndTime     string `json:"end_time"`
+	Priority    string `json:"priority"`
+	Status      string `json:"status"`
+}
+
+func InsertTask(w http.ResponseWriter, r *http.Request) {
+	var task Task
+	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Your logic to insert the task into the database goes here
+	// For example:
+	// err := insertTaskIntoDB(task)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "Task added successfully"})
+}
+
 func main() {
-	// Create a new task
-	task := utils.Task{
-		TaskName:    "Finish Go Project",
-		Description: "Complete the Go project by end of the day",
-		StartTime:   "2024-08-17T09:00:00Z",
-		EndTime:     "2024-08-17T17:00:00Z",
-		Priority:    "High",
-		Status:      "Not Started",
-	}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/task", InsertTask)
 
-	err := utils.InsertTask(task)
-	if err != nil {
-		log.Fatalf("Failed to insert task: %v", err)
-	}
-	fmt.Println("Task inserted successfully.")
+	// Set up CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3001"}, // Allow only your frontend origin
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Content-Type"},
+	})
 
-	// Read tasks
-	tasks, err := utils.GetTasks()
-	if err != nil {
-		log.Fatalf("Failed to get tasks: %v", err)
-	}
-	fmt.Println("Tasks:", tasks)
-
-	// Update a task
-	taskToUpdate := tasks[0]
-	taskToUpdate.Status = "In Progress"
-	err = utils.UpdateTask(taskToUpdate.ID, taskToUpdate)
-	if err != nil {
-		log.Fatalf("Failed to update task: %v", err)
-	}
-	fmt.Println("Task updated successfully.")
-
-	// Delete a task
-	err = utils.DeleteTask(taskToUpdate.ID)
-	if err != nil {
-		log.Fatalf("Failed to delete task: %v", err)
-	}
-	fmt.Println("Task deleted successfully.")
+	handler := c.Handler(mux)
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
